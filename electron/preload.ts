@@ -18,7 +18,9 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
     const [channel, ...omit] = args
     return ipcRenderer.invoke(channel, ...omit)
   },
-
+  openVault: () => ipcRenderer.invoke('open-vault'),
+  listMdFiles: (folderPath: string) => ipcRenderer.invoke('list-md-files', folderPath),
+  readMdFile: (filePath: string) => ipcRenderer.invoke('read-md-file', filePath),
   // You can expose other APTs you need here.
   // ...
 })

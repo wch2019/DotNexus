@@ -16,7 +16,10 @@ electron.contextBridge.exposeInMainWorld("ipcRenderer", {
   invoke(...args) {
     const [channel, ...omit] = args;
     return electron.ipcRenderer.invoke(channel, ...omit);
-  }
+  },
+  openVault: () => electron.ipcRenderer.invoke("open-vault"),
+  listMdFiles: (folderPath) => electron.ipcRenderer.invoke("list-md-files", folderPath),
+  readMdFile: (filePath) => electron.ipcRenderer.invoke("read-md-file", filePath)
   // You can expose other APTs you need here.
   // ...
 });

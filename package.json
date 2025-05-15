@@ -10,17 +10,26 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vicons/antd": "^0.13.0",
+    "@vicons/fluent": "^0.13.0",
+    "@vicons/ionicons5": "^0.13.0",
+    "marked": "^15.0.11",
+    "tailwindcss": "^4.1.5",
     "vue": "^3.4.21"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.16",
+    "@tailwindcss/vite": "^4.1.5",
+    "@types/node": "^22.15.3",
     "@vitejs/plugin-vue": "^5.0.4",
-    "typescript": "^5.2.2",
-    "vite": "^5.1.6",
-    "vue-tsc": "^2.0.26",
     "electron": "^30.0.1",
     "electron-builder": "^24.13.3",
+    "naive-ui": "^2.41.0",
+    "typescript": "^5.2.2",
+    "vite": "^5.1.6",
     "vite-plugin-electron": "^0.28.6",
-    "vite-plugin-electron-renderer": "^0.14.5"
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "vue-tsc": "^2.0.26"
   },
   "main": "dist-electron/main.js"
 }

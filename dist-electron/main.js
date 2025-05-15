@@ -1,4 +1,5 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain, dialog } from "electron";
+import fs, { readdirSync, readFileSync } from "fs";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -12,7 +13,7 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 
 let win;
 function createWindow() {
   win = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+    icon: path.join(process.env.VITE_PUBLIC, "vite.svg"),
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs")
     }
@@ -25,6 +26,52 @@ function createWindow() {
   } else {
     win.loadFile(path.join(RENDERER_DIST, "index.html"));
   }
+  ipcMain.handle("list-md-files", (event, folderPath) => {
+    return readdirSync(folderPath).filter((f) => f.endsWith(".md"));
+  });
+  ipcMain.handle("read-md-file", (event, filePath) => {
+    return readFileSync(filePath, "utf-8");
+  });
+  ipcMain.handle("open-vault", async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ["openDirectory"]
+      // 只允许选择目录
+    });
+    if (result.canceled || result.filePaths.length === 0) return null;
+    const folderPath = result.filePaths[0];
+    const folderName = path.basename(folderPath);
+    const tree = getMarkdownTree(folderPath);
+    return {
+      folderPath,
+      // 返回根文件夹路径
+      folderName,
+      // 获取文件夹名称
+      tree
+      // 返回树形结构数据
+    };
+  });
+}
+function getMarkdownTree(dir) {
+  const items = fs.readdirSync(dir, { withFileTypes: true });
+  return items.map((item) => {
+    const fullPath = path.join(dir, item.name);
+    if (item.isDirectory()) {
+      return {
+        type: "folder",
+        label: item.name,
+        fullPath,
+        children: getMarkdownTree(fullPath)
+        // 递归处理子文件夹
+      };
+    } else if (item.isFile() && item.name.endsWith(".md")) {
+      return {
+        type: "file",
+        label: item.name,
+        fullPath
+      };
+    }
+    return null;
+  }).filter(Boolean);
 }
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
