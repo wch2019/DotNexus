@@ -2,18 +2,7 @@
   <div class="h-screen">
     <!-- 上部：编辑区域-->
     <div style="height:calc(100vh - 30px)">
-          <!-- Markdown 编辑器 -->
-          <textarea
-              v-model="markdown"
-              class="w-1/2  p-4 bg-white dark:bg-[#1e1e1e] resize-none outline-none font-serif"
-              placeholder="在此编写 Markdown..."
-          />
-
-          <!-- Markdown 实时预览 -->
-          <div
-              class="w-1/2  p-4 prose prose-lg dark:prose-invert overflow-auto"
-              v-html="rendered"
-          ></div>
+      <VditorEditor v-model="content" height="calc(100vh - 30px)" @ready="onEditorReady" />
     </div>
 
     <!-- 底部：按钮区域 -->
@@ -23,8 +12,15 @@
   </div>
 </template>
 
-<script setup>
+<script setup  lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import VditorEditor from '@/components/Vditor/VditorEditor.vue';
+
+const content = ref('# Hello DotNexus!');
+const onEditorReady = (editor: any) => {
+  console.log('Vditor is ready:', editor);
+};
+
 import { marked } from 'marked'
 
 const markdown = ref('# Welcome')
@@ -32,6 +28,7 @@ const markdown = ref('# Welcome')
 onMounted(() => {
   window.addEventListener('load-md', (e) => {
     markdown.value = e.detail
+    content.value= e.detail
   })
 })
 

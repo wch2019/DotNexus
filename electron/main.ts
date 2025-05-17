@@ -87,7 +87,7 @@ function createWindow() {
 function getMarkdownTree(dir: string): Array<{
     type: 'folder' | 'file';
     name: string;
-    fullPath: string;
+    key: string;
     children?: any[]; // 只有文件夹才有 children 属性
 }> {
     // 读取目录内容，包含文件类型信息
@@ -95,22 +95,22 @@ function getMarkdownTree(dir: string): Array<{
 
     return items
         .map((item) => {
-            const fullPath = path.join(dir, item.name) // 获取完整路径
+            const key = path.join(dir, item.name) // 获取完整路径
 
             if (item.isDirectory()) {
                 // 如果是文件夹，递归获取子内容
                 return {
                     type: 'folder',
                     label: item.name,
-                    fullPath,
-                    children: getMarkdownTree(fullPath), // 递归处理子文件夹
+                    key,
+                    children: getMarkdownTree(key), // 递归处理子文件夹
                 }
             } else if (item.isFile() && item.name.endsWith('.md')) {
                 // 如果是Markdown文件，返回文件信息
                 return {
                     type: 'file',
                     label: item.name,
-                    fullPath,
+                    key,
                 }
             }
             // 忽略非Markdown文件

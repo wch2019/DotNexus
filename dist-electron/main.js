@@ -54,20 +54,20 @@ function createWindow() {
 function getMarkdownTree(dir) {
   const items = fs.readdirSync(dir, { withFileTypes: true });
   return items.map((item) => {
-    const fullPath = path.join(dir, item.name);
+    const key = path.join(dir, item.name);
     if (item.isDirectory()) {
       return {
         type: "folder",
         label: item.name,
-        fullPath,
-        children: getMarkdownTree(fullPath)
+        key,
+        children: getMarkdownTree(key)
         // 递归处理子文件夹
       };
     } else if (item.isFile() && item.name.endsWith(".md")) {
       return {
         type: "file",
         label: item.name,
-        fullPath
+        key
       };
     }
     return null;

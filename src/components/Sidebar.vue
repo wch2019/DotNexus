@@ -15,15 +15,23 @@
             </li>
           </ul>
           <div class="overflow-auto flex-1">
-            <!--            <TreeView :nodes="fileTree" @select="openFile"/>-->
             <n-tree
+                v-if="fileTree.length > 0"
                 show-line
                 :data="fileTree"
                 :render-label="renderLabel"
-                :render-switcher-icon="renderSwitcherIcon"
+                :node-props="nodeProps"
                 :expand-on-click="true"
                 @update:selected-keys="handleSelect"
             />
+            <n-empty
+                v-else
+                size="large"
+                description="没有打开的文件夹"
+                @click="chooseVault"
+                class="empty-tip"
+            >
+            </n-empty>
           </div>
         </div>
 
@@ -38,7 +46,7 @@
                   trigger="click"
                   @select="handleMenuSelect"
               >
-                <n-button quaternary size="small" style="width: 100%;"> {{ selectedFileName }}</n-button>
+                <n-button quaternary size="small" style="width: 100%;"> {{selectedFileName }}</n-button>
               </n-dropdown>
             </div>
             <div class="w-1/5">
@@ -66,17 +74,17 @@
 <script setup lang="ts">
 import {
   Settings,
-  FolderOpenOutline as FolderOpenIcon,
-  Folder as FolderIcon,
+  FolderOutline,
+  DocumentOutline,
   FileTrayFullOutline
 } from '@vicons/ionicons5'
 import { ref, h } from 'vue'
-import { NTree, NIcon, NText } from 'naive-ui'
+import { NTree, NIcon, NText,NEllipsis } from 'naive-ui'
 import TreeView from './TreeView.vue'
 // 本地 Markdown 文件列表
 const files = ref<string[]>([])
 // 选中文件列表
-const fileTree = ref<any[]>([])
+let fileTree = ref<any[]>([])
 const fileContent = ref<string>('')
 // 菜单选项
 const menuOptions = ref([
@@ -143,9 +151,9 @@ const menuOptions = ref([
   }
 ]);
 // 选中文件名称
-const selectedFileName = ref('')
+let selectedFileName = ref('打开文件夹...')
 // 选中文件路径
-const selectedFilePath = ref('')
+let selectedFilePath = ref('')
 
 
 async function openFile(file: any) {
@@ -176,16 +184,26 @@ async function chooseVault() {
   if (result) {
     selectedFileName.value = result.folderName
     selectedFilePath.value = result.folderPath
-    fileTree.value = result.tree
+    fileTree.value = transformToTreeData(result.tree)
+    console.log(transformToTreeData(result.tree))
   } else {
     console.log('用户取消选择文件夹')
   }
 }
 
+const transformToTreeData: (nodes: any[]) => any[] = (nodes: any[]) => {
+  return nodes
+      // 1. 过滤掉以 . 开头的文件夹
+      .filter(node => !(node.type === 'folder' && node.label.startsWith('.')))
+      .map(node => ({
+        ...node,
+        children: node.children ? transformToTreeData(node.children) : undefined
+      }))
+}
+
 // 点击文件时加载内容
-const loadFile = async (fileName: string) => {
+const loadFile = async (fullPath: string) => {
   try {
-    const fullPath = `${folderPath}/${fileName}`
     const content = await window.ipcRenderer.readMdFile(fullPath)
 
     // 向全局窗口派发事件，主编辑器组件监听此事件加载 Markdown 内容
@@ -196,61 +214,59 @@ const loadFile = async (fileName: string) => {
 }
 
 
-
-
-// 树形数据（示例结构，实际从IPC获取）
-const treeData = ref([
-  {
-    label: '我的笔记',
-    key: '/path/to/notes',
-    type: 'folder',
-    isLeaf: false,
-    children: [
-      {
-        label: '工作',
-        key: '/path/to/notes/work',
-        type: 'folder',
-        isLeaf: false,
-        children: [
-          {
-            label: '项目A.md',
-            key: '/path/to/notes/work/projectA.md',
-            type: 'file',
-            isLeaf: true
-          }
-        ]
-      },
-      {
-        label: '个人.md',
-        key: '/path/to/notes/personal.md',
-        type: 'file',
-        isLeaf: true
-      }
-    ]
-  }
-])
-
 // 处理节点选择
 const handleSelect = (keys: string[]) => {
   console.log('选中节点:', keys[0])
   // 这里可以添加打开文件/文件夹的逻辑
+  loadFile(keys[0])
 }
 
-// 自定义节点标签渲染
+// 自定义标签渲染（带图标）
 const renderLabel = ({ option }: { option: any }) => {
   return h(
-      NText,
-      { depth: option.type === 'folder' ? 1 : 3 },
-      { default: () => option.label }
+      'div',
+      { style: 'display: flex; align-items: center; gap: 6px' },
+      [
+        // 根据类型显示不同图标
+        h(NIcon, {
+          size: 16,
+          color: option.type === 'folder' ? '#ffb93c' : '#999'
+        }, {
+          default: () => h(option.type === 'folder' ? FolderOutline : DocumentOutline)
+        }),
+        h(
+            NEllipsis,
+            {
+              tooltip: { placement: 'right' },
+              style: 'flex: 1; min-width: 0;' // 确保文本区域可收缩
+            },
+            {
+              default: () =>
+                  h(NText, { depth: 3 }, {
+                    default: () => option.label // ✅ 关键修改：函数形式传入 slot
+                  })
+            }
+        )
+      ]
   )
 }
-
-// 自定义切换图标
-const renderSwitcherIcon = ({ option, expanded }: { option: any, expanded: boolean }) => {
-  if (option.type === 'file') return null // 文件不显示切换图标
-
-  return h(NIcon, { size: 18 }, {
-    default: () => h(expanded ? FolderOpenIcon : FolderIcon)
-  })
+// 节点属性（阻止默认换行）
+const nodeProps = () => {
+  return {
+    style: {
+      whiteSpace: 'nowrap',
+      overflow: 'hidden'
+    }
+  }
 }
 </script>
+
+<style scoped>
+.empty-tip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+</style>

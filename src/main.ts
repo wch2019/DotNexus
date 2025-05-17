@@ -1,6 +1,7 @@
 import {createApp} from 'vue'
 import '@/style/style.css'
 import '@/style/tailwind.css';
+import 'vditor/dist/index.css';
 import App from './App.vue'
 
 // 引入 Naive UI
