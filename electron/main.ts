@@ -30,7 +30,9 @@ let win: BrowserWindow | null
 
 function createWindow() {
     win = new BrowserWindow({
-        icon: path.join(process.env.VITE_PUBLIC, 'vite.svg'),
+        // frame: false, // 隐藏原生标题栏
+        // titleBarStyle: 'hidden', // macOS 额外可加
+        icon: path.join(process.env.VITE_PUBLIC, 'dotcode.png'),
         webPreferences: {
             preload: path.join(__dirname, 'preload.mjs'),
         },

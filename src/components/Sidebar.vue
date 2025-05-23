@@ -4,16 +4,6 @@
       <n-tab-pane name="文件" tab="文件" display-directive="show:lazy">
         <!-- 上部：文件列表区域 -->
         <div style="height:calc(100vh - 75px)">
-          <ul>
-            <li
-                v-for="file in files"
-                :key="file"
-                class="mb-2 cursor-pointer hover:underline"
-                @click="loadFile(file)"
-            >
-              📄 {{ file }}
-            </li>
-          </ul>
           <div class="overflow-auto flex-1">
             <n-tree
                 v-if="fileTree.length > 0"
@@ -262,11 +252,5 @@ const nodeProps = () => {
 </script>
 
 <style scoped>
-.empty-tip {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-}
+
 </style>

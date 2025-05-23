@@ -2,7 +2,26 @@
   <div class="h-screen">
     <!-- 上部：编辑区域-->
     <div style="height:calc(100vh - 30px)">
-      <VditorEditor v-model="content" height="calc(100vh - 30px)" @ready="onEditorReady" />
+      <MilkdownEditorWrapper v-if="EmptyUtils.isNotEmptyString(markdown)" v-model="markdown"/>
+<!--      <VditorEditor v-if="EmptyUtils.isNotEmptyString(content)" v-model="content" height="calc(100vh - 30px)"-->
+<!--                    @ready="onEditorReady"/>-->
+      <n-empty
+          v-else
+          class="empty-tip"
+          size="large"
+          description="没有打开的文件"
+      >
+        <template #icon>
+          <n-icon>
+            <DocumentOutline/>
+          </n-icon>
+        </template>
+        <template #extra>
+          <n-button size="small" text>
+            打开文件
+          </n-button>
+        </template>
+      </n-empty>
     </div>
 
     <!-- 底部：按钮区域 -->
@@ -12,27 +31,26 @@
   </div>
 </template>
 
-<script setup  lang="ts">
-import { ref, computed, onMounted } from 'vue'
+<script setup lang="ts">
+import {ref, computed, onMounted} from 'vue'
 import VditorEditor from '@/components/Vditor/VditorEditor.vue';
+import {DocumentOutline} from '@vicons/ionicons5'
+import MilkdownEditorWrapper from '@/components/Milkdown/MilkdownEditorWrapper.vue'
 
-const content = ref('# Hello DotNexus!');
+const content = ref('');
 const onEditorReady = (editor: any) => {
   console.log('Vditor is ready:', editor);
 };
 
-import { marked } from 'marked'
+import {EmptyUtils} from "@/utils/isNotEmpty.ts";
 
-const markdown = ref('# Welcome')
+const markdown = ref('')
 
 onMounted(() => {
   window.addEventListener('load-md', (e) => {
     markdown.value = e.detail
-    content.value= e.detail
   })
 })
-
-const rendered = computed(() => marked.parse(markdown.value))
 </script>
 
 <style>

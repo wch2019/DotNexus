@@ -68,7 +68,7 @@ DotNexus/
 ## 🛠 技术栈
 
 - **主框架**：Electron
-- **前端**：React + TailwindCSS
+- **前端**：Vue + TailwindCSS
 - **数据库**：SQLite（可扩展为云同步）
 - **其他**：TypeScript、Node.js
 
